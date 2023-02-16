@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import _ from 'lodash';
 import Sudoswap from './exchanges/Sudoswap.js';
 import OpenSea from './exchanges/OpenSea.js';
