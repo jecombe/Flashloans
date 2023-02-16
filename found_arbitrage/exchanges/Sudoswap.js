@@ -3,10 +3,11 @@ import _ from 'lodash';
 
 export default class {
 
-    constructor() {
+    constructor(utils) {
         this.exchange = 'sudoswap'
         this.collections = {
         }
+        this.utils = utils;
     }
 
     async request(url, data = {}, method, headers) {
