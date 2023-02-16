@@ -1,7 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
 import opensea from 'opensea-js';
-import HDWalletProvider from '@truffle/hdwallet-provider';
 
 const headersTwo = {
     'authority': 'api.uniswap.org',
@@ -29,7 +28,7 @@ export default class {
 
         this.seaport = new opensea.OpenSeaPort(this.utils.getProvider(), {
             networkName: opensea.Network.Main,
-            apiKey: "a0672943ce854d16a94e4509aa388ef1"
+            apiKey: process.env.KEY_OPENSEA
         });
     }
 
