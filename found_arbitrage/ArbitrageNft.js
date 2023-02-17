@@ -48,14 +48,14 @@ export default class {
         return this.utils.encodeAbi(model, payload)
     }
 
-    async getParamsEncoding() {
+    async getParamsEncoding(exchangeToBuy, nft, collectionAddr) {
         try {
-            const bytesParams = await exchangeToBuy.getParams(nfts[0].tokenId, collectionAddr);
+            const bytesParams = await exchangeToBuy.getParams(nft.tokenId, collectionAddr);
             const encodeParamsExchange1 = {
                 bytes: bytesParams,
                 name: exchangeToBuy.exchange
             }
-            return this.encodingAllParams(encodeParamsExchange1, "", nfts[0].price);
+            return this.encodingAllParams(encodeParamsExchange1, "", nft.price);
 
         } catch (error) {
             return error;
@@ -73,11 +73,11 @@ export default class {
             Logger.info(`Maybe profitable arbitrage ${nfts[0].tokenId} on collection ${amm.collections[collectionAddr].name} buy on ${exchangeToBuy.exchange}: ${nfts[0].price} sell to ${amm.exchange}: ${priceInEth} DIFFERENCE: ${difference}`);
             if (this.isProfitableGas()) {
                 try {
-                    const bytesAllParams = await this.getParamsEncoding();
+                    const bytesAllParams = await this.getParamsEncoding(exchangeToBuy, nfts[0], collectionAddr);
+                    console.log(bytesAllParams);
                     this.callFlashloan(bytesAllParams);
 
                 } catch (error) {
-                    console.log(error);
                     Logger.error('CONMPARE PRICE ENCODING', error)
 
                 }
