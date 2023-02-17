@@ -12,8 +12,7 @@ export default class {
         this.exchanges = [{
             amm: new Sudoswap(this.utils),
             toCompare: [new OpenSea(this.utils)]
-        },
-        ];
+        }];
     }
 
     isProfitableGas() {
@@ -37,11 +36,10 @@ export default class {
             }
 
         }
-        const res = this.getNumOfExchange(exchange1.name);
 
         const payload = {
             token: this.tokenLoan,
-            amount:1000000,
+            amount: 1000000,
             exchange1: this.getNumOfExchange(exchange1.name),
             exchange2: 2,
             byteExchange1: exchange1.bytes
@@ -49,8 +47,23 @@ export default class {
         return this.utils.encodeAbi(model, payload)
     }
 
+    async getParamsEncoding() {
+        try {
+            const bytesParams = await exchangeToBuy.getParams(nfts[0].tokenId, collectionAddr);
+            const encodeParamsExchange1 = {
+                bytes: bytesParams,
+                name: exchangeToBuy.exchange
+            }
+            return this.encodingAllParams(encodeParamsExchange1, "", nfts[0].price);
 
+        } catch (error) {
+            return error;
+        }
+    }
 
+    callFlashloan(bytesAllParams) {
+        // call flashloan with all params for flashloan and arbitrage parameters encoding
+    }
 
     async comparePrices(nfts, amm, collectionAddr, exchangeToBuy) {
         const priceInEth = this.utils.convertToEth(amm.collections[collectionAddr].sellQuote);
@@ -59,15 +72,15 @@ export default class {
             Logger.info(`Maybe profitable arbitrage ${nfts[0].tokenId} on collection ${amm.collections[collectionAddr].name} buy on ${exchangeToBuy.exchange}: ${nfts[0].price} sell to ${amm.exchange}: ${priceInEth} DIFFERENCE: ${difference}`);
             if (this.isProfitableGas()) {
                 try {
-                    const encodeParamsExchange1 = {
-                        bytes: await exchangeToBuy.getParams(nfts[0].tokenId, collectionAddr),
-                        name: exchangeToBuy.exchange
-                    }
-                    const bytesAllParams = this.encodingAllParams(encodeParamsExchange1,"", nfts[0].price);
-                    
+                    const bytesAllParams = await this.getParamsEncoding();
+                    this.callFlashloan(bytesAllParams);
+
                 } catch (error) {
-                    Logger.error('COMPARE PRICE', error)
+                    console.log(error);
+                    Logger.error('CONMPARE PRICE ENCODING', error)
+
                 }
+
             }
         }
     }
@@ -77,8 +90,7 @@ export default class {
 
             responses.forEach((el, i) => {
                 if (i === index) return;
-                this.comparePrices(element, el)
-
+                this.comparePrices(element, el);
             });
         });
     }
