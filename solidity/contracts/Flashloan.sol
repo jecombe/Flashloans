@@ -18,7 +18,7 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
     /**
         This function is called after your contract has received the flash loaned amount
      */
-     
+
     function executeOperation(
         address asset,
         uint256 amount,
@@ -26,7 +26,7 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         address initiator,
         bytes calldata params
     ) external override returns (bool) {
-       startArbitrage();
+        startArbitrage();
         //
         // This contract now has the funds requested.
         // Your logic goes here.
@@ -45,7 +45,7 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
     }
 
     function requestFlashLoan(bytes calldata _params) external {
-       // paramsArb = _params;
+        // paramsArb = _params;
         address receiverAddress = address(this);
 
         bytes memory params = "";
@@ -74,7 +74,7 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         emit Received(msg.sender, msg.value);
     }
 
-    function rugPull() public payable {
+    function rugPull() external payable onlyOwner {
         // withdraw all ETH
         msg.sender.call{value: address(this).balance}("");
     }
