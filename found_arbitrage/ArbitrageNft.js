@@ -16,6 +16,7 @@ export default class {
     }
 
     isProfitableGas() {
+        // calculate price gas and call flashloan cost
         return true;
     }
 
