@@ -2,6 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
 //import "./interfaces/IRouter.sol";
 
 /// ============ Structs ============
@@ -13,20 +15,6 @@ struct PairSwapSpecific {
 struct PairSwapAny {
     address pair;
     uint256 numItems;
-}
-
-/// ============ Interfaces ============
-// ERC721
-interface IERC721 {
-    /// @notice Set transfer approval for operator
-    function setApprovalForAll(address operator, bool approved) external;
-
-    /// @notice Transfer NFT
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external;
 }
 
 // Sudoswap, source: https://github.com/sudoswap/lssvm/blob/9e8ee80f60682b8f3f73163f1870ff28f7e07668/src/LSSVMRouter.sol
@@ -83,7 +71,7 @@ interface IPair {
     ) external returns (uint256 outputAmount);
 }
 
-contract SellSudoswap is IERC721Receiver {
+contract SudoSwap is IERC721Receiver {
     /// @dev Sudoswap contract
     IRouter internal immutable LSSVM;
     address internal router = 0x2B2e8cDA09bBA9660dCA5cB6233787738Ad68329;

@@ -4,18 +4,7 @@ pragma solidity ^0.8.13;
 import "./SeaportInterface.sol";
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-
-interface IERC721 {
-    /// @notice Set transfer approval for operator
-    function setApprovalForAll(address operator, bool approved) external;
-
-    /// @notice Transfer NFT
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external;
-}
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract OpenSea {
     AdditionalRecipient[] additionalRecipients;
@@ -55,10 +44,12 @@ contract OpenSea {
 
     function buyErc721Opensea(bytes memory _params) internal {
         ParamsOpensea memory orderParams = abi.decode(_params, (ParamsOpensea));
+
         IERC721(orderParams.offerToken).setApprovalForAll(
             transferManager,
             true
         );
+
         BasicOrderParameters memory order = BasicOrderParameters({
             considerationToken: orderParams.considerationToken,
             considerationIdentifier: orderParams.considerationIdentifier,
@@ -81,5 +72,14 @@ contract OpenSea {
             signature: orderParams.signature
         });
         SEAPORT.fulfillBasicOrder{value: 10000000000000000}(order);
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 }
