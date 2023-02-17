@@ -88,7 +88,6 @@ export default class {
 
     manageExchanges(responses) {
         responses.forEach((element, index) => {
-
             responses.forEach((el, i) => {
                 if (i === index) return;
                 this.comparePrices(element, el);
