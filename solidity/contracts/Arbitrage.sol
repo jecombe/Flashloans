@@ -7,9 +7,9 @@ contract Arbitrage is OpenSea {
     struct Params {
         address token;
         uint256 amount;
-        uint256 nameExchange1;
-        uint256 nameExchange2;
-        bytes exchange1;
+        uint256 exchange1;
+        uint256 exchange2;
+        bytes byteExchange1;
     }
 
     constructor() {}
@@ -20,11 +20,9 @@ contract Arbitrage is OpenSea {
 
     function dispatcher() internal {}
 
-
-
     function startArbitrage() internal {
-        if (parameters.nameExchange1 == 0) {
-            buyErc721Opensea(parameters.exchange1);
+        if (parameters.exchange1 == 1) {
+            buyErc721Opensea(parameters.byteExchange1);
         }
     }
 }
