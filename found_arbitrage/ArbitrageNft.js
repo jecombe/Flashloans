@@ -38,7 +38,6 @@ export default class {
 
         }
         const res = this.getNumOfExchange(exchange1.name);
-        console.log(res);
 
         const payload = {
             token: this.tokenLoan,
@@ -59,14 +58,16 @@ export default class {
         if (difference > 0) {
             Logger.info(`Maybe profitable arbitrage ${nfts[0].tokenId} on collection ${amm.collections[collectionAddr].name} buy on ${exchangeToBuy.exchange}: ${nfts[0].price} sell to ${amm.exchange}: ${priceInEth} DIFFERENCE: ${difference}`);
             if (this.isProfitableGas()) {
-                const encodeParamsExchange1 = {
-                    bytes: await exchangeToBuy.getParams("7738", "0xed5af388653567af2f388e6224dc7c4b3241c544"),
-                    name: exchangeToBuy.exchange
+                try {
+                    const encodeParamsExchange1 = {
+                        bytes: await exchangeToBuy.getParams(nfts[0].tokenId, collectionAddr),
+                        name: exchangeToBuy.exchange
+                    }
+                    const bytesAllParams = this.encodingAllParams(encodeParamsExchange1,"", nfts[0].price);
+                    
+                } catch (error) {
+                    Logger.error('COMPARE PRICE', error)
                 }
-                console.log(encodeParamsExchange1);
-                const bytesAllParams = this.encodingAllParams(encodeParamsExchange1,"", nfts[0].price);
-               // console.log(bytesAllParams);
-                // const encodeParamsExchange2 = amm.getParams(nfts[0].tokenId, collectionAddr);
             }
         }
     }
