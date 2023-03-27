@@ -22,7 +22,7 @@ export default class {
     constructor(utils) {
         this.exchange = 'opensea';
         this.collections = {
-            [this.exchange]:{}
+            [this.exchange]: {}
         }
         this.utils = utils;
 
@@ -152,6 +152,7 @@ export default class {
     async getParams(tokenId, collectionAddr) {
         const order = await this.getOrder('ask', tokenId, collectionAddr)
        const orderPayload = this.createOrder(order)
+       console.log(order.protocolData);
         const model =
         {
             "basicOrderParameters": {
