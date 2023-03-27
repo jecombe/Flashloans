@@ -6,7 +6,7 @@ import "./SeaportInterface.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract OpenSea {
+contract OpenSea is IERC721Receiver {
     AdditionalRecipient[] additionalRecipients;
     event Received(address, uint256);
     address transferManager;
@@ -18,7 +18,12 @@ contract OpenSea {
 
     constructor() {
         SEAPORT = SeaportInterface(0x00000000006c3852cbEf3e08E8dF289169EdE581);
-        transferManager = 0x317a8Fe0f1C7102e7674aB231441E485c64c178A;
+        transferManager = 0x1E0049783F008A0085193E00003D00cd54003c71;
+
+        IERC721(0x317a8Fe0f1C7102e7674aB231441E485c64c178A).setApprovalForAll(
+            transferManager,
+            true
+        );
     }
 
     struct ParamsOpensea {
@@ -42,13 +47,8 @@ contract OpenSea {
         bytes signature;
     }
 
-    function buyErc721Opensea(bytes memory _params) internal {
+    function buyErc721Opensea(bytes memory _params) external payable {
         ParamsOpensea memory orderParams = abi.decode(_params, (ParamsOpensea));
-
-        IERC721(orderParams.offerToken).setApprovalForAll(
-            transferManager,
-            true
-        );
 
         BasicOrderParameters memory order = BasicOrderParameters({
             considerationToken: orderParams.considerationToken,
@@ -71,7 +71,7 @@ contract OpenSea {
             additionalRecipients: orderParams.additionalRecipients,
             signature: orderParams.signature
         });
-        SEAPORT.fulfillBasicOrder{value: 10000000000000000}(order);
+        SEAPORT.fulfillBasicOrder{value: msg.value}(order);
     }
 
     function onERC721Received(

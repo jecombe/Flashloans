@@ -18,11 +18,9 @@ contract Arbitrage is OpenSea {
         parameters = abi.decode(_params, (Params));
     }
 
-    function dispatcher() internal {}
-
-    function startArbitrage() internal {
+    function startArbitrage() external payable {
         if (parameters.exchange1 == 1) {
-            buyErc721Opensea(parameters.byteExchange1);
+            this.buyErc721Opensea{value: msg.value}(parameters.byteExchange1);
         }
     }
 }

@@ -7,65 +7,42 @@ import {IERC20} from "@aave/core-v3/contracts/dependencies/openzeppelin/contract
 import "./utils/Ownable.sol";
 import "./Arbitrage.sol";
 
-interface IWETH9 {
-    function name() external view returns (string memory);
-
-    function symbol() external view returns (string memory);
-
-    function decimals() external view returns (uint8);
-
-    function balanceOf(address) external view returns (uint256);
-
-    function allowance(address, address) external view returns (uint256);
-
-    receive() external payable;
-
+interface IWETH9 is IERC20 {
     function deposit() external payable;
 
     function withdraw(uint256 wad) external;
-
-    function totalSupply() external view returns (uint256);
-
-    function approve(address guy, uint256 wad) external returns (bool);
-
-    function transfer(address dst, uint256 wad) external returns (bool);
-
-    function transferFrom(
-        address src,
-        address dst,
-        uint256 wad
-    ) external returns (bool);
 }
 
 contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
     uint256 amountLoan;
     bytes paramsArb;
-    IWETH9 WETH;
+    IWETH9 public constant WETH =
+        IWETH9(0xCCB14936C2E000ED8393A571D15A2672537838Ad);
 
-    constructor(address _addressProvider)
-        FlashLoanSimpleReceiverBase(IPoolAddressesProvider(_addressProvider))
-    {
-        WETH = IWETH9(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
-    }
+    constructor(
+        address _addressProvider
+    ) FlashLoanSimpleReceiverBase(IPoolAddressesProvider(_addressProvider)) {}
 
     /**
         This function is called after your contract has received the flash loaned amount
      */
 
-    function wrap(uint256 amount) internal {
+    function wrap() external payable {
         //create WETH from ETH
-        if (amount != 0) {
-            WETH.deposit{value: amount}();
+        if (msg.value != 0) {
+            WETH.deposit{value: msg.value}();
         }
         require(
-            WETH.balanceOf(address(this)) >= amount,
+            WETH.balanceOf(address(this)) >= msg.value,
             "Ethereum not deposited"
         );
     }
 
-    function unwrap(uint256 amount) internal {
+    function unwrap(address payable recipient, uint256 amount) internal {
         if (amount != 0) {
+            WETH.transferFrom(msg.sender, address(this), amount);
             WETH.withdraw(amount);
+            recipient.transfer(amount);
         }
     }
 
@@ -77,13 +54,11 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         bytes calldata params
     ) external override returns (bool) {
         //unwrap weth
-        unwrap(amount);
-        startArbitrage();
-        wrap(amount);
-        // This contract now has the funds requested.
-        // Your logic goes here.
-        //
-
+        unwrap(payable(address(this)), amount);
+        //start arbitrage
+        this.startArbitrage{value: address(this).balance}();
+        //unwrap
+        this.wrap{value: amount}();
         // At the end of your logic above, this contract owes
         // the flashloaned amount + premiums.
         // Therefore ensure your contract has enough to repay
@@ -92,8 +67,14 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         // Approve the Pool contract allowance to *pull* the owed amount
         uint256 amountOwed = amount + premium;
         WETH.approve(address(POOL), amountOwed);
-
         return true;
+    }
+
+    function test(uint256 amount) external {
+        //decode(_params);
+        unwrap(payable(address(this)), amount);
+        this.startArbitrage{value: address(this).balance}();
+        this.wrap{value: amount}();
     }
 
     function requestFlashLoan(bytes calldata _params) external {
@@ -102,6 +83,7 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
 
         bytes memory params = "";
         uint16 referralCode = 0;
+
         decode(_params);
 
         POOL.flashLoanSimple(
@@ -113,11 +95,12 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         );
     }
 
-    function getBalance() public view returns (uint256) {
+    function getBalance(address _tokenAddress) public view returns (uint256) {
         return WETH.balanceOf(address(this));
     }
 
-    function withdraw() external onlyOwner {
+    function withdraw(address _tokenAddress) external onlyOwner {
+        //IERC20 token = IERC20(_tokenAddress);
         WETH.transfer(msg.sender, WETH.balanceOf(address(this)));
     }
 
@@ -125,12 +108,10 @@ contract Flashloan is FlashLoanSimpleReceiverBase, Arbitrage, Ownable {
         emit Received(msg.sender, msg.value);
     }
 
+    //function() external payable {}
+
     function rugPull() external payable onlyOwner {
         // withdraw all ETH
         msg.sender.call{value: address(this).balance}("");
-    }
-
-    function getERC20Balance() public view returns (uint256) {
-        return WETH.balanceOf(address(this));
     }
 }
