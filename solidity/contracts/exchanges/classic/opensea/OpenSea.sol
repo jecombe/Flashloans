@@ -6,6 +6,10 @@ import "./SeaportInterface.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+/*
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+*/
 contract OpenSea is IERC721Receiver {
     AdditionalRecipient[] additionalRecipients;
     event Received(address, uint256);
