@@ -27,10 +27,11 @@
     "ethers": "^5.7.2",
     "lodash": "^4.17.21",
     "log4js": "^6.7.1",
-    "opensea-js": "^4.0.13",
+    "opensea-js": "^4.0.24",
     "web3": "^1.8.2"
   },
   "devDependencies": {
-    "eslint": "^8.34.0"
+    "eslint": "^8.34.0",
+    "hardhat": "^2.13.0"
   }
 }
