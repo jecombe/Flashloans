@@ -139,6 +139,34 @@ export default class {
         return basicOrderParameters;
     }
 
+    getSignature(order) {
+        const payload = {
+            orderHash: order.orderHash,
+            protocol: order.protocolAddress,
+            wallet: order.maker.address
+        }
+        const options = {
+            method: 'POST',
+            url: 'https://api.opensea.io/v2/listings/fulfillment_data',
+            headers: {
+                'X-API-KEY': process.env.KEY_OPENSEA,
+                'content-type': 'application/json'
+            },
+            data: {
+                listing: {
+                    hash: payload.orderHash,
+                    chain: 'ethereum',
+                    protocol_address: payload.protocol
+                },
+                fulfiller: { address: payload.wallet }
+            }
+        };
+
+        return axios
+            .request(options)
+
+    }
+
     async getOrder(side, tokenId, assetContractAddress) {
 
         return this.seaport.api.getOrder({
@@ -151,8 +179,12 @@ export default class {
 
     async getParams(tokenId, collectionAddr) {
         const order = await this.getOrder('ask', tokenId, collectionAddr)
+        
        const orderPayload = this.createOrder(order)
-       console.log(order.protocolData);
+       const signature = await this.getSignature(order);
+       const sg = signature.data.fulfillment_data.transaction.input_data.parameters.signature;
+
+       orderPayload.signature = sg;
         const model =
         {
             "basicOrderParameters": {
